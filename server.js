@@ -11,7 +11,7 @@ const {
   initAuthCreds,
   BufferJSON,
   getContentType
-} = require('baileys');
+} = require('@whiskeysockets/baileys');
 const { MongoClient } = require('mongodb');
 const QRCode = require('qrcode');
 const pino = require('pino');
