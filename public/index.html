@@ -29,16 +29,47 @@
   <div id="qr-screen" class="screen">
     <div class="qr-box">
       <h2>Link your WhatsApp</h2>
-      <div id="qr-container">
-        <div class="qr-loading"><div class="spinner"></div><p>Waiting for QR code...</p></div>
-        <img id="qr-img" src="" alt="QR Code" style="display:none">
+
+      <!-- Tab Switcher -->
+      <div class="link-tabs">
+        <button class="link-tab active" id="tab-qr" onclick="switchLinkTab('qr')">QR Code</button>
+        <button class="link-tab" id="tab-pairing" onclick="switchLinkTab('pairing')">Phone Number</button>
       </div>
-      <div class="qr-steps">
-        <p>1. Open WhatsApp on your phone</p>
-        <p>2. Tap <strong>Menu</strong> or <strong>Settings</strong> &rarr; <strong>Linked Devices</strong></p>
-        <p>3. Tap <strong>Link a Device</strong></p>
-        <p>4. Point your phone at this screen to scan the QR code</p>
+
+      <!-- QR Tab -->
+      <div id="qr-tab-content" class="tab-content active">
+        <div id="qr-container">
+          <div class="qr-loading"><div class="spinner"></div><p>Waiting for QR code...</p></div>
+          <img id="qr-img" src="" alt="QR Code" style="display:none">
+        </div>
+        <div class="qr-steps">
+          <p>1. Open WhatsApp on your phone</p>
+          <p>2. Tap <strong>Menu</strong> or <strong>Settings</strong> &rarr; <strong>Linked Devices</strong></p>
+          <p>3. Tap <strong>Link a Device</strong></p>
+          <p>4. Point your phone at this screen to scan the QR code</p>
+        </div>
       </div>
+
+      <!-- Pairing Code Tab -->
+      <div id="pairing-tab-content" class="tab-content">
+        <div class="pairing-section">
+          <p class="pairing-desc">Enter your phone number to get a pairing code</p>
+          <form id="pairing-form">
+            <div class="phone-input-group">
+              <span class="phone-prefix">+</span>
+              <input type="tel" id="phone-number-input" placeholder="94 77 123 4567" autocomplete="tel" required>
+            </div>
+            <button type="submit" id="pairing-btn" class="pairing-submit-btn">Get Code</button>
+          </form>
+          <div id="pairing-code-display" style="display:none">
+            <p class="pairing-label">Your pairing code:</p>
+            <div class="pairing-code-value" id="pairing-code-text"></div>
+            <p class="pairing-hint">Enter this code on your phone in<br><strong>Settings &rarr; Linked Devices &rarr; Link with phone number</strong></p>
+          </div>
+          <p id="pairing-error" class="error-text" style="display:none"></p>
+        </div>
+      </div>
+
     </div>
   </div>
 
