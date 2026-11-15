@@ -98,6 +98,87 @@ input { font-family: inherit; }
 .qr-steps p { color: #8696a0; font-size: 13px; margin-bottom: 6px; line-height: 1.5; }
 .qr-steps strong { color: #e9edef; }
 
+/* ═══ Link Tab Switcher ═══ */
+.link-tabs {
+  display: flex; gap: 0;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2a3942;
+}
+.link-tab {
+  flex: 1; padding: 10px 16px;
+  background: transparent; border: none;
+  color: #8696a0; font-size: 14px;
+  cursor: pointer; transition: all 0.2s;
+}
+.link-tab.active {
+  background: #00a884; color: #fff;
+}
+.link-tab:hover:not(.active) {
+  background: #1d2b33;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ═══ Pairing Code ═══ */
+.pairing-section { padding: 10px 0; }
+.pairing-desc {
+  color: #8696a0; font-size: 14px;
+  margin-bottom: 20px;
+}
+.phone-input-group {
+  display: flex; align-items: center;
+  background: #2a3942; border-radius: 8px;
+  padding: 0 12px; margin-bottom: 16px;
+}
+.phone-prefix {
+  color: #8696a0; font-size: 16px;
+  margin-right: 4px; font-weight: 500;
+}
+#phone-number-input {
+  flex: 1; background: transparent;
+  border: none; outline: none;
+  color: #e9edef; font-size: 16px;
+  padding: 12px 8px; letter-spacing: 1px;
+}
+#phone-number-input::placeholder { color: #667781; }
+.pairing-submit-btn {
+  width: 100%; padding: 12px;
+  background: #00a884; border: none;
+  border-radius: 8px; color: #fff;
+  font-size: 15px; cursor: pointer;
+  transition: background 0.2s;
+}
+.pairing-submit-btn:hover { background: #00c49a; }
+.pairing-submit-btn:disabled {
+  background: #1d6d5c; cursor: not-allowed;
+}
+#pairing-code-display {
+  margin-top: 24px; text-align: center;
+}
+.pairing-label {
+  color: #8696a0; font-size: 13px;
+  margin-bottom: 8px;
+}
+.pairing-code-value {
+  font-size: 36px; font-weight: 600;
+  letter-spacing: 6px; color: #00a884;
+  background: #1a2c34; border-radius: 12px;
+  padding: 16px 24px; display: inline-block;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 16px;
+}
+.pairing-hint {
+  color: #667781; font-size: 12px;
+  line-height: 1.6;
+}
+.pairing-hint strong { color: #8696a0; }
+.error-text {
+  color: #ea4335; font-size: 13px;
+  margin-top: 10px;
+}
+
 /* ═══ Loading Screen ═══ */
 #loading-screen {
   align-items: center; justify-content: center;
