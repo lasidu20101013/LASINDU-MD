@@ -311,7 +311,10 @@ function formatMessage(msg) {
 }
 
 // ─── WhatsApp Connection ───
-async function connectToWhatsApp() {
+let pendingPairingPhone = null;
+
+async function connectToWhatsApp(pairingPhone) {
+  pendingPairingPhone = pairingPhone || null;
   const { state, saveCreds } = await useMongoDBAuthState(authCollection);
   let version;
   try { version = (await fetchLatestBaileysVersion()).version; }
@@ -336,9 +339,24 @@ async function connectToWhatsApp() {
 
   store.bind(sock.ev);
 
+  // If pairing phone was provided, request code after short delay
+  if (pendingPairingPhone) {
+    setTimeout(async () => {
+      try {
+        const code = await sock.requestPairingCode(pendingPairingPhone);
+        console.log('Pairing code generated:', code);
+        io.emit('pairing-code', code);
+      } catch (e) {
+        console.error('Pairing code error:', e);
+        io.emit('error-msg', 'Failed to get pairing code: ' + e.message);
+      }
+      pendingPairingPhone = null;
+    }, 5000);
+  }
+
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
-    if (qr) {
+    if (qr && !pendingPairingPhone) {
       try {
         currentQR = await QRCode.toDataURL(qr, { width: 256, margin: 2 });
         connectionState = 'qr';
@@ -445,18 +463,22 @@ io.on('connection', (socket) => {
     }
   });
 
-  // ─── Pairing Code (no guard — needed before WhatsApp is linked) ───
+  // ─── Pairing Code ───
   socket.on('request-pairing-code', async (phoneNumber) => {
     if (!authenticated) return socket.emit('error-msg', 'Not authenticated');
-    if (!sock) return socket.emit('error-msg', 'WhatsApp not initialized. Please wait...');
     try {
       // Clean phone number - remove spaces, dashes, plus sign
       const cleanNumber = phoneNumber.replace(/[\s\-\+]/g, '');
       if (!/^\d{10,15}$/.test(cleanNumber)) {
         return socket.emit('error-msg', 'Invalid phone number format');
       }
-      const code = await sock.requestPairingCode(cleanNumber);
-      socket.emit('pairing-code', code);
+      console.log('Pairing code requested for:', cleanNumber);
+      // Close existing socket and reconnect with pairing mode
+      if (sock) {
+        try { sock.end(); } catch (e) {}
+      }
+      // Reconnect with pairing phone number
+      connectToWhatsApp(cleanNumber);
     } catch (e) {
       console.error('Pairing code error:', e);
       socket.emit('error-msg', 'Failed to get pairing code: ' + e.message);
