@@ -445,6 +445,23 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ─── Pairing Code ───
+  socket.on('request-pairing-code', guard(async (phoneNumber) => {
+    if (!sock) return socket.emit('error-msg', 'WhatsApp not initialized');
+    try {
+      // Clean phone number - remove spaces, dashes, plus sign
+      const cleanNumber = phoneNumber.replace(/[\s\-\+]/g, '');
+      if (!/^\d{10,15}$/.test(cleanNumber)) {
+        return socket.emit('error-msg', 'Invalid phone number format');
+      }
+      const code = await sock.requestPairingCode(cleanNumber);
+      socket.emit('pairing-code', code);
+    } catch (e) {
+      console.error('Pairing code error:', e);
+      socket.emit('error-msg', 'Failed to get pairing code: ' + e.message);
+    }
+  }));
+
   function guard(fn) {
     return (...args) => {
       if (!authenticated) return socket.emit('error-msg', 'Not authenticated');
