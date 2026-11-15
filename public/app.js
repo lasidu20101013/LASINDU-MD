@@ -80,6 +80,45 @@ socket.on('auth-failed', () => {
   socket.disconnect();
 });
 
+// ─── Link Tab Switching ───
+function switchLinkTab(tab) {
+  document.querySelectorAll('.link-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  if (tab === 'qr') {
+    $('#tab-qr').classList.add('active');
+    $('#qr-tab-content').classList.add('active');
+  } else {
+    $('#tab-pairing').classList.add('active');
+    $('#pairing-tab-content').classList.add('active');
+  }
+}
+window.switchLinkTab = switchLinkTab;
+
+// ─── Pairing Code ───
+$('#pairing-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const phone = $('#phone-number-input').value.replace(/[\s\-]/g, '');
+  if (!phone || phone.length < 10) {
+    $('#pairing-error').textContent = 'Enter a valid phone number with country code (e.g. 94771234567)';
+    $('#pairing-error').style.display = 'block';
+    return;
+  }
+  $('#pairing-btn').textContent = 'Requesting...';
+  $('#pairing-btn').disabled = true;
+  $('#pairing-error').style.display = 'none';
+  $('#pairing-code-display').style.display = 'none';
+  socket.emit('request-pairing-code', phone);
+});
+
+socket.on('pairing-code', (code) => {
+  $('#pairing-btn').textContent = 'Get Code';
+  $('#pairing-btn').disabled = false;
+  // Format code with dash for readability (e.g. 1234-5678)
+  const formatted = code.length === 8 ? code.slice(0, 4) + '-' + code.slice(4) : code;
+  $('#pairing-code-text').textContent = formatted;
+  $('#pairing-code-display').style.display = 'block';
+});
+
 // ─── QR ───
 function showQR(dataUrl) {
   $('#qr-img').src = dataUrl;
@@ -1163,7 +1202,17 @@ function closeAllPopups() {
 }
 
 // ─── Errors ───
-socket.on('error-msg', (msg) => { console.error('Server:', msg); toast('Error: ' + msg); });
+socket.on('error-msg', (msg) => {
+  console.error('Server:', msg);
+  toast('Error: ' + msg);
+  // Also show error in pairing section if it's open
+  if ($('#pairing-tab-content').classList.contains('active')) {
+    $('#pairing-error').textContent = msg;
+    $('#pairing-error').style.display = 'block';
+    $('#pairing-btn').textContent = 'Get Code';
+    $('#pairing-btn').disabled = false;
+  }
+});
 socket.on('disconnect', () => console.log('Disconnected'));
 socket.on('connect_error', () => console.log('Connection error'));
 
