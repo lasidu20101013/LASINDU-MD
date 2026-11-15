@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WhatsApp Web</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="https://web.whatsapp.com/favicon-64x64.ico">
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen active">
+    <div class="login-box">
+      <div class="login-icon">
+        <svg viewBox="0 0 39 52" width="39" height="52"><path fill="#00a884" d="M10.7 8C4.8 8 0 12.8 0 18.7v14.6C0 39.2 4.8 44 10.7 44h17.6C34.2 44 39 39.2 39 33.3V18.7C39 12.8 34.2 8 28.3 8H10.7zm14.6 5.3c1 0 1.8.8 1.8 1.8s-.8 1.8-1.8 1.8-1.8-.8-1.8-1.8.8-1.8 1.8-1.8zM19.5 16c5 0 9 4 9 9s-4 9-9 9-9-4-9-9 4-9 9-9zm0 3.6A5.4 5.4 0 1 0 24.9 25a5.4 5.4 0 0 0-5.4-5.4z"></path></svg>
+      </div>
+      <h1>WhatsApp Web</h1>
+      <p class="login-subtitle">Enter your owner password to continue</p>
+      <form id="login-form">
+        <input type="password" id="password-input" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit" id="login-btn">Login</button>
+      </form>
+      <p id="login-error" class="error-text" style="display:none">Wrong password</p>
+    </div>
+  </div>
+
+  <!-- QR Screen -->
+  <div id="qr-screen" class="screen">
+    <div class="qr-box">
+      <h2>Link your WhatsApp</h2>
+      <div id="qr-container">
+        <div class="qr-loading"><div class="spinner"></div><p>Waiting for QR code...</p></div>
+        <img id="qr-img" src="" alt="QR Code" style="display:none">
+      </div>
+      <div class="qr-steps">
+        <p>1. Open WhatsApp on your phone</p>
+        <p>2. Tap <strong>Menu</strong> or <strong>Settings</strong> &rarr; <strong>Linked Devices</strong></p>
+        <p>3. Tap <strong>Link a Device</strong></p>
+        <p>4. Point your phone at this screen to scan the QR code</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="screen">
+    <div class="loading-box">
+      <div class="spinner big"></div>
+      <h2>WhatsApp Web</h2>
+      <div class="loading-bar-container"><div class="loading-bar"></div></div>
+      <p class="loading-text">Loading your chats...</p>
+    </div>
+  </div>
+
+  <!-- Main Chat Screen -->
+  <div id="chat-screen" class="screen">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <img id="my-avatar" class="avatar clickable" src="" alt="" title="Profile">
+        <div class="sidebar-header-right">
+          <button class="icon-btn" id="btn-new-chat" title="New chat">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
+          </button>
+          <button class="icon-btn" id="btn-menu" title="Menu">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 7a2 2 0 100-4 2 2 0 000 4zm0 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu Dropdown -->
+      <div id="sidebar-menu" class="dropdown-menu" style="display:none">
+        <div class="menu-item" data-action="new-group">New group</div>
+        <div class="menu-item" data-action="starred-msgs">Starred messages</div>
+        <div class="menu-item" data-action="archived">Archived</div>
+        <div class="menu-item" data-action="settings">Settings</div>
+        <div class="menu-item" data-action="logout">Log out</div>
+      </div>
+
+      <div class="search-container">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#8696a0" d="M15.009 13.805h-.636l-.22-.219a5.184 5.184 0 001.256-3.386 5.207 5.207 0 10-5.207 5.208 5.183 5.183 0 003.385-1.255l.221.22v.635l4.004 3.999 1.194-1.195-3.997-4.007zm-4.808 0a3.6 3.6 0 110-7.2 3.6 3.6 0 010 7.2z"></path></svg>
+          <input type="text" id="search-input" placeholder="Search or start new chat">
+        </div>
+        <button class="icon-btn filter-btn" id="btn-filter" title="Filter unread">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"></path></svg>
+        </button>
+      </div>
+
+      <div id="chat-list" class="chat-list"></div>
+    </div>
+
+    <!-- Main area -->
+    <div class="main-area">
+      <!-- Default no-chat -->
+      <div id="no-chat" class="no-chat">
+        <div class="no-chat-content">
+          <svg viewBox="0 0 303 172" width="250"><path fill="#364147" d="M229.565 160.229c32.647-16.036 55.002-50.298 55.002-89.229 0-54.951-44.848-100-100-100-55.151 0-100 45.049-100 100 0 38.931 22.355 73.193 55.002 89.229l-6.3 11.771h102.596l-6.3-11.771z" opacity=".08"></path></svg>
+          <h2>WhatsApp Web</h2>
+          <p>Send and receive messages without keeping your phone online.</p>
+          <p class="encrypted-text">&#128274; Your personal messages are end-to-end encrypted</p>
+        </div>
+      </div>
+
+      <!-- Active chat -->
+      <div id="active-chat" style="display:none">
+        <div class="chat-header">
+          <button class="icon-btn back-btn" id="btn-back" title="Back">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+          </button>
+          <img id="chat-avatar" class="avatar clickable" src="" alt="">
+          <div class="chat-header-info" id="chat-header-info">
+            <h3 id="chat-name"></h3>
+            <p id="chat-status-text" class="status-text"></p>
+          </div>
+          <div class="chat-header-actions">
+            <button class="icon-btn" id="btn-search-msg" title="Search messages">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+            </button>
+            <button class="icon-btn" id="btn-chat-menu" title="Menu">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 7a2 2 0 100-4 2 2 0 000 4zm0 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Menu Dropdown -->
+        <div id="chat-menu" class="dropdown-menu chat-dropdown" style="display:none">
+          <div class="menu-item" data-action="contact-info">Contact info</div>
+          <div class="menu-item" data-action="select-messages">Select messages</div>
+          <div class="menu-item" data-action="mute-chat">Mute notifications</div>
+          <div class="menu-item" data-action="disappearing">Disappearing messages</div>
+          <div class="menu-item" data-action="clear-chat">Clear chat</div>
+          <div class="menu-item" data-action="delete-chat">Delete chat</div>
+          <div class="menu-item" data-action="pin-chat">Pin chat</div>
+          <div class="menu-item" data-action="block-contact">Block</div>
+        </div>
+
+        <!-- Search in chat bar -->
+        <div id="search-in-chat" class="search-in-chat" style="display:none">
+          <div class="search-in-chat-bar">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#8696a0" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+            <input type="text" id="search-msg-input" placeholder="Search...">
+            <button class="icon-btn" id="btn-close-search">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+            </button>
+          </div>
+          <div id="search-results-count" class="search-results-count"></div>
+        </div>
+
+        <!-- Reply bar -->
+        <div id="reply-bar" class="reply-bar" style="display:none">
+          <div class="reply-bar-content">
+            <div class="reply-bar-color"></div>
+            <div class="reply-bar-text">
+              <span id="reply-name" class="reply-name"></span>
+              <span id="reply-text" class="reply-text-preview"></span>
+            </div>
+          </div>
+          <button class="icon-btn" id="btn-cancel-reply">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+          </button>
+        </div>
+
+        <div id="messages" class="messages-container">
+          <div class="messages-loading"><div class="spinner"></div></div>
+        </div>
+
+        <div class="input-area">
+          <button class="icon-btn" id="btn-emoji" title="Emoji">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"></path></svg>
+          </button>
+          <button class="icon-btn" id="btn-attach" title="Attach">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.816 15.556v.002c0 1.502.584 2.912 1.646 3.972s2.472 1.647 3.974 1.647a5.58 5.58 0 003.972-1.645l9.547-9.548c.769-.768 1.147-1.767 1.058-2.817-.079-.968-.548-1.927-1.319-2.698-1.594-1.592-4.068-1.711-5.517-.262l-7.916 7.915c-.881.881-.792 2.25.214 3.261.501.501 1.124.779 1.679.779.455 0 .854-.17 1.167-.484l6.277-6.276-.707-.708-6.277 6.276c-.576.577-1.462.109-2.14-.569-.678-.678-1.145-1.564-.568-2.14l7.916-7.916c1.073-1.073 3.07-.974 4.31.266.648.647 1.06 1.426 1.124 2.132.064.755-.238 1.463-.826 2.051L8.398 20.271a4.21 4.21 0 01-2.962 1.228 4.213 4.213 0 01-2.964-1.228c-1.636-1.636-1.636-4.289 0-5.926L13.013 3.807l-.707-.707L1.815 13.59v.002c-.947.946-1.469 2.205-1.469 3.543s.522 2.597 1.47 3.543z"></path></svg>
+          </button>
+          <div class="input-wrapper">
+            <input type="text" id="msg-input" placeholder="Type a message" autocomplete="off">
+          </div>
+          <button class="icon-btn" id="btn-voice" title="Voice message">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.42 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"></path></svg>
+          </button>
+          <button class="send-btn" id="send-btn" title="Send" style="display:none">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+          </button>
+        </div>
+
+        <!-- Voice recording bar -->
+        <div id="voice-recording" class="voice-recording" style="display:none">
+          <button class="icon-btn" id="btn-cancel-voice" title="Cancel">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+          </button>
+          <div class="recording-indicator">
+            <span class="recording-dot"></span>
+            <span id="recording-time">0:00</span>
+          </div>
+          <button class="send-btn" id="btn-send-voice" title="Send voice">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact/Group Info Panel -->
+    <div id="info-panel" class="info-panel" style="display:none">
+      <div class="info-panel-header">
+        <button class="icon-btn" id="btn-close-info">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+        <h3 id="info-panel-title">Contact info</h3>
+      </div>
+      <div class="info-panel-body">
+        <div class="info-profile-section">
+          <img id="info-avatar" class="info-avatar" src="" alt="">
+          <h2 id="info-name"></h2>
+          <p id="info-phone" class="info-subtitle"></p>
+        </div>
+        <div id="info-about-section" class="info-section">
+          <label>About</label>
+          <p id="info-about"></p>
+        </div>
+        <div id="info-group-desc" class="info-section" style="display:none">
+          <label>Description</label>
+          <p id="info-desc-text"></p>
+        </div>
+        <div id="info-disappearing-section" class="info-section">
+          <div class="info-section-row clickable" id="btn-toggle-disappearing">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0012 4c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"></path></svg>
+            <span>Disappearing messages</span>
+            <span id="disappearing-status" class="info-value">Off</span>
+          </div>
+        </div>
+        <div id="info-participants" class="info-section" style="display:none">
+          <label id="participants-label">Participants</label>
+          <div id="participants-list" class="participants-list"></div>
+        </div>
+        <div class="info-section info-actions">
+          <div class="info-action-row danger" id="btn-block-from-info" style="display:none">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 014 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0120 12c0 4.42-3.58 8-8 8z"></path></svg>
+            <span>Block</span>
+          </div>
+          <div class="info-action-row danger" id="btn-leave-group" style="display:none">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path></svg>
+            <span>Exit group</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu (right click on message) -->
+  <div id="msg-context-menu" class="context-menu" style="display:none">
+    <div class="menu-item" data-action="reply">Reply</div>
+    <div class="menu-item" data-action="react">React</div>
+    <div class="menu-item" data-action="forward">Forward</div>
+    <div class="menu-item" data-action="star">Star</div>
+    <div class="menu-item" data-action="copy">Copy</div>
+    <div class="menu-item" data-action="delete">Delete</div>
+  </div>
+
+  <!-- Reaction Picker -->
+  <div id="reaction-picker" class="reaction-picker" style="display:none">
+    <span class="reaction-emoji" data-emoji="&#128077;">&#128077;</span>
+    <span class="reaction-emoji" data-emoji="&#10084;&#65039;">&#10084;&#65039;</span>
+    <span class="reaction-emoji" data-emoji="&#128514;">&#128514;</span>
+    <span class="reaction-emoji" data-emoji="&#128558;">&#128558;</span>
+    <span class="reaction-emoji" data-emoji="&#128546;">&#128546;</span>
+    <span class="reaction-emoji" data-emoji="&#128591;">&#128591;</span>
+  </div>
+
+  <!-- Emoji Picker -->
+  <div id="emoji-picker" class="emoji-picker" style="display:none">
+    <div class="emoji-picker-header">
+      <input type="text" id="emoji-search" placeholder="Search emoji">
+    </div>
+    <div id="emoji-grid" class="emoji-grid"></div>
+  </div>
+
+  <!-- Forward Modal -->
+  <div id="forward-modal" class="modal" style="display:none">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content forward-modal-content">
+      <div class="modal-header">
+        <button class="icon-btn" id="btn-close-forward">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+        <h3>Forward message to</h3>
+      </div>
+      <div class="forward-search">
+        <input type="text" id="forward-search-input" placeholder="Search...">
+      </div>
+      <div id="forward-chat-list" class="forward-chat-list"></div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div id="delete-modal" class="modal" style="display:none">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content delete-modal-content">
+      <p>Delete message?</p>
+      <div class="modal-actions">
+        <button class="modal-btn" id="btn-delete-me">Delete for me</button>
+        <button class="modal-btn accent" id="btn-delete-everyone" style="display:none">Delete for everyone</button>
+        <button class="modal-btn" id="btn-cancel-delete">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disappearing Messages Modal -->
+  <div id="disappearing-modal" class="modal" style="display:none">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content disappearing-modal-content">
+      <h3>Disappearing messages</h3>
+      <div class="radio-group">
+        <label class="radio-option"><input type="radio" name="disappearing" value="0" checked> Off</label>
+        <label class="radio-option"><input type="radio" name="disappearing" value="86400"> 24 hours</label>
+        <label class="radio-option"><input type="radio" name="disappearing" value="604800"> 7 days</label>
+        <label class="radio-option"><input type="radio" name="disappearing" value="7776000"> 90 days</label>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn" id="btn-cancel-disappearing">Cancel</button>
+        <button class="modal-btn accent" id="btn-save-disappearing">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Group Modal -->
+  <div id="new-group-modal" class="modal" style="display:none">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content new-group-modal-content">
+      <div class="modal-header">
+        <button class="icon-btn" id="btn-close-new-group">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+        <h3>New group</h3>
+      </div>
+      <input type="text" id="new-group-name" placeholder="Group subject" class="modal-input">
+      <div class="forward-search">
+        <input type="text" id="group-member-search" placeholder="Search contacts...">
+      </div>
+      <div id="selected-members" class="selected-members"></div>
+      <div id="group-contacts-list" class="forward-chat-list"></div>
+      <button class="fab-btn" id="btn-create-group-confirm" title="Create group">
+        <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Poll Modal -->
+  <div id="poll-modal" class="modal" style="display:none">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content poll-modal-content">
+      <div class="modal-header">
+        <button class="icon-btn" id="btn-close-poll">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+        <h3>Create poll</h3>
+      </div>
+      <input type="text" id="poll-question" placeholder="Question" class="modal-input">
+      <div id="poll-options" class="poll-options">
+        <input type="text" class="modal-input poll-option-input" placeholder="Option 1">
+        <input type="text" class="modal-input poll-option-input" placeholder="Option 2">
+      </div>
+      <button class="text-btn" id="btn-add-poll-option">+ Add option</button>
+      <label class="checkbox-label"><input type="checkbox" id="poll-multi-select"> Allow multiple answers</label>
+      <button class="modal-btn accent full-width" id="btn-send-poll">Send poll</button>
+    </div>
+  </div>
+
+  <!-- Attach Menu -->
+  <div id="attach-menu" class="attach-menu" style="display:none">
+    <div class="attach-option" data-type="image" title="Photos & Videos">
+      <div class="attach-icon" style="background:#7f66ff">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#fff" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"></path></svg>
+      </div>
+      <span>Photos & Videos</span>
+    </div>
+    <div class="attach-option" data-type="document" title="Document">
+      <div class="attach-icon" style="background:#5157ae">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#fff" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"></path></svg>
+      </div>
+      <span>Document</span>
+    </div>
+    <div class="attach-option" data-type="poll" title="Poll">
+      <div class="attach-icon" style="background:#02a698">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#fff" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"></path></svg>
+      </div>
+      <span>Poll</span>
+    </div>
+    <div class="attach-option" data-type="contact" title="Contact">
+      <div class="attach-icon" style="background:#0eabf4">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#fff" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+      </div>
+      <span>Contact</span>
+    </div>
+  </div>
+
+  <!-- Media Viewer Modal -->
+  <div id="media-modal" class="modal" style="display:none">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content media-modal-content">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div id="media-viewer"></div>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div id="settings-panel" class="settings-panel" style="display:none">
+    <div class="info-panel-header">
+      <button class="icon-btn" id="btn-close-settings">
+        <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+      </button>
+      <h3>Settings</h3>
+    </div>
+    <div class="settings-body">
+      <div class="settings-profile">
+        <img id="settings-avatar" class="info-avatar clickable" src="" alt="">
+        <div class="settings-profile-info">
+          <h3 id="settings-name"></h3>
+          <p id="settings-about" class="info-subtitle"></p>
+        </div>
+      </div>
+      <div class="info-section">
+        <label>Your name</label>
+        <div class="settings-edit-row">
+          <input type="text" id="edit-name" class="settings-input" placeholder="Name">
+          <button class="icon-btn" id="btn-save-name" title="Save">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+          </button>
+        </div>
+      </div>
+      <div class="info-section">
+        <label>About</label>
+        <div class="settings-edit-row">
+          <input type="text" id="edit-about" class="settings-input" placeholder="About">
+          <button class="icon-btn" id="btn-save-about" title="Save">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <!-- File inputs (hidden) -->
+  <input type="file" id="file-input-image" style="display:none" accept="image/*,video/*">
+  <input type="file" id="file-input-doc" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.csv">
+  <input type="file" id="file-input-pp" style="display:none" accept="image/*">
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
