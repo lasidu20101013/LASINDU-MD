@@ -5,7 +5,6 @@ const {
   default: makeWASocket,
   DisconnectReason,
   fetchLatestBaileysVersion,
-  makeInMemoryStore,
   downloadMediaMessage,
   proto,
   initAuthCreds,
@@ -16,6 +15,61 @@ const { MongoClient } = require('mongodb');
 const QRCode = require('qrcode');
 const pino = require('pino');
 const path = require('path');
+
+// Custom in-memory store (compatible with Baileys v6+)
+function makeInMemoryStore({ logger }) {
+  const store = {
+    chats: {
+      _data: new Map(),
+      all() { return Array.from(this._data.values()); },
+      get(id) { return this._data.get(id); },
+      upsert(chat) { this._data.set(chat.id, { ...this._data.get(chat.id), ...chat }); },
+    },
+    contacts: {},
+    messages: {},
+    bind(ev) {
+      ev.on('chats.upsert', (chats) => {
+        for (const chat of chats) store.chats.upsert(chat);
+      });
+      ev.on('chats.update', (updates) => {
+        for (const update of updates) {
+          const existing = store.chats.get(update.id);
+          if (existing) store.chats.upsert({ ...existing, ...update });
+        }
+      });
+      ev.on('contacts.upsert', (contacts) => {
+        for (const contact of contacts) {
+          store.contacts[contact.id] = { ...store.contacts[contact.id], ...contact };
+        }
+      });
+      ev.on('contacts.update', (updates) => {
+        for (const update of updates) {
+          if (store.contacts[update.id]) Object.assign(store.contacts[update.id], update);
+        }
+      });
+      ev.on('messages.upsert', ({ messages: msgs, type }) => {
+        for (const msg of msgs) {
+          const jid = msg.key.remoteJid;
+          if (!jid) continue;
+          if (!store.messages[jid]) store.messages[jid] = { array: [] };
+          const idx = store.messages[jid].array.findIndex(m => m.key.id === msg.key.id);
+          if (idx >= 0) store.messages[jid].array[idx] = msg;
+          else store.messages[jid].array.push(msg);
+        }
+      });
+      ev.on('messages.update', (updates) => {
+        for (const { key, update } of updates) {
+          const jid = key.remoteJid;
+          if (store.messages[jid]) {
+            const idx = store.messages[jid].array.findIndex(m => m.key.id === key.id);
+            if (idx >= 0) Object.assign(store.messages[jid].array[idx], update);
+          }
+        }
+      });
+    }
+  };
+  return store;
+}
 
 // ─── Config ───
 const PORT = process.env.PORT || 3000;
